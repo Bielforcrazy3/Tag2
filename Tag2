@@ -101,6 +101,7 @@ menuDiv.innerHTML = `
     <p>Aqui aparecerão os sinais.</p>
     <div class="signal-inner">
       <p>Sinal:</p>
+      <p id="success-message" style="display: none;">Entrada gerada com sucesso, execute o sinal até G2</p>
     </div>
   </div>
 `;
@@ -138,6 +139,8 @@ if (window.matchMedia("(max-width: 800px)").matches) {
 function mostrarSinal(sinal) {
     const signalInner = document.querySelector('.signal-inner p');
     signalInner.textContent = `Sinal: ${sinal}`;
+    const successMessage = document.getElementById('success-message');
+    successMessage.style.display = 'block';
 }
 
 // Função para gerar um hash SHA-256
@@ -178,6 +181,26 @@ function determinarSinal(ponto) {
     }
 }
 
+// Função para desativar o botão e mostrar o cronômetro
+function desativarBotao(tempo) {
+    const botao = document.querySelector('.pedir-sinal');
+    botao.disabled = true;
+    botao.style.background = '#808080';
+    botao.innerHTML = `<i class="fas fa-clock"></i> Aguardar ${tempo}s`;
+
+    let contador = tempo;
+    const intervalo = setInterval(() => {
+        contador--;
+        botao.innerHTML = `<i class="fas fa-clock"></i> Aguardar ${contador}s`;
+        if (contador <= 0) {
+            clearInterval(intervalo);
+            botao.disabled = false;
+            botao.style.background = '#F20505';
+            botao.innerHTML = `<i class="fas fa-eye"></i> 🎯Pedir Sinal 🚀`;
+        }
+    }, 1000);
+}
+
 // Função principal para gerar e exibir o sinal
 async function gerarESinal() {
     const serverSeed = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('');
@@ -186,25 +209,8 @@ async function gerarESinal() {
     const ponto = calcularPonto(hash);
     const sinal = determinarSinal(ponto);
     mostrarSinal(sinal);
+    desativarBotao(35); // Desativa o botão por 35 segundos
 }
 
 // Adicionar evento ao botão "Pedir Sinal"
 document.querySelector('.pedir-sinal').addEventListener('click', gerarESinal);
-
-// Desabilitar o botão de "Pedir Sinal" por 15 segundos após clicar nele e mostrar o cronômetro
-document.querySelector('.pedir-sinal').addEventListener('click', function() {
-    const button = this;
-    button.disabled = true;
-    let timeLeft = 15;
-
-    const interval = setInterval(() => {
-        if (timeLeft <= 0) {
-            clearInterval(interval);
-            button.disabled = false;
-            button.innerHTML = "<i class='fas fa-eye'></i> 🎯Pedir Sinal 🚀";
-        } else {
-            button.innerHTML = `Aguarde ${timeLeft}s`;
-            timeLeft--;
-        }
-    }, 1000);
-});
