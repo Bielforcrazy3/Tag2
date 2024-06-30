@@ -1,0 +1,210 @@
+const styleTag = document.createElement('style');
+styleTag.innerHTML = `
+  @import url('https://fonts.googleapis.com/css2?family=M+PLUS+1+Code&display=swap');
+  div.context-options {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    width: 250px;
+    height: 280px; /* Altura reduzida */
+    border: 1px solid black;
+    background: #0B0E11;
+    padding: 5px;
+    display: none;
+    z-index: 9999;
+    overflow-y: auto;
+  }
+  div.context-options img {
+    border-radius: 10px;
+    width: 100%;
+    max-height: 80px; /* Altura reduzida */
+  }
+  div.context-options span.bot-title {
+    color: White;
+    text-align: center;
+    display: block;
+    font-family: 'M PLUS 1 Code', sans-serif;
+    margin-bottom: 5px;
+  }
+  div.context-options span.context-option {
+    text-align: left;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background: #F20505;
+    color: #000;
+    padding: 5px;
+    border-bottom: 1px black;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 12px;
+    font-family: 'M PLUS 1 Code', sans-serif;
+    transition: .1s all;
+  }
+  div.context-options span.context-option:hover {
+    transform: scale(1.1);
+  }
+  div.context-options span.context-option:active {
+    transform: scale(1);
+  }
+  .closeContextOptions {
+    background: #F20505 !important;
+  }
+  span.dev-by {
+    color: White;
+    display: block;
+    text-align: center;
+    margin-top: 5px;
+    font-family: 'M PLUS 1 Code', sans-serif;
+  }
+  div.signal-section {
+    background: #ffffff; /* Fundo branco */
+    border: 1px solid #000;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+    color: #000;
+    font-family: 'M PLUS 1 Code', sans-serif;
+    height: 150px; /* Altura original */
+    overflow-y: auto;
+    position: relative;
+  }
+  div.signal-section p {
+    margin: 0;
+    color: #000;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  div.signal-inner {
+    background: #F20505; /* Fundo vermelho */
+    border-radius: 5px;
+    padding: 5px;
+    color: #ffffff;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%; /* Ajuste conforme necessário */
+    text-align: center;
+  }
+`;
+
+const menuDiv = document.createElement('div');
+menuDiv.classList.add('context-options');
+menuDiv.innerHTML = `
+  <img src="https://i.ibb.co/fMyLHr1/IMG-20240525-WA0072.jpg" />
+  <span class="bot-title"><i class="fas fa-robot"></i> 🤑BOT CRASH DO 0️⃣0️⃣ - (0️⃣.1️⃣.0️⃣)</span>
+  <span class="context-option closeContextOptions" onclick="closeMenu();"><i class="fas fa-times"></i> Fechar Menu 🏳️</span>
+  <span class="context-option pedir-sinal"><i class="fas fa-eye"></i> 🎯Pedir Sinal 🚀 </span>
+  <span class="dev-by"><i class="fas fa-code"></i> Padrões Encontrado 📈</span>
+  <div class="signal-section" id="signal-section">
+    <p>Aqui aparecerão os sinais.</p>
+    <div class="signal-inner">
+      <p>Sinal:</p>
+    </div>
+  </div>
+`;
+
+let fafa = document.createElement('script');
+fafa.src = 'https://kit.fontawesome.com/a076d05399.js';
+fafa.setAttribute('crossorigin', 'anonymous');
+
+document.body.prepend(fafa);
+document.body.prepend(styleTag);
+document.body.appendChild(menuDiv);
+
+function showMenu(event) {
+    event.preventDefault();
+    let posX = event.clientX;
+    let posY = event.clientY;
+    let context_options = document.getElementsByClassName('context-options')[0];
+    context_options.style.top = `50px`;
+    context_options.style.left = `50px`;
+    context_options.style.display = 'unset';
+}
+
+function closeMenu() {
+    let context_options = document.getElementsByClassName('context-options')[0];
+    context_options.style.display = 'none';
+}
+
+if (window.matchMedia("(max-width: 800px)").matches) {
+    document.addEventListener('dblclick', showMenu);
+} else {
+    document.addEventListener('contextmenu', showMenu);
+}
+
+// Função para exibir sinais na seção de sinais
+function mostrarSinal(sinal) {
+    const signalInner = document.querySelector('.signal-inner p');
+    signalInner.textContent = `Sinal: ${sinal}`;
+}
+
+// Função para gerar um hash SHA-256
+function gerarHash(seed) {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(seed)).then(hashBuffer => {
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    });
+}
+
+// Função para calcular o ponto de crash
+function calcularPonto(hash) {
+    const divisible = (hash, mod) => {
+        let val = 0;
+        let o = hash.length % 4;
+        for (let i = o > 0 ? o - 4 : 0; i < hash.length; i += 4) {
+            val = ((val << 16) + parseInt(hash.substring(i, i + 4), 16)) % mod;
+        }
+        return val === 0;
+    };
+
+    if (divisible(hash, 15)) return 0;
+
+    let h = parseInt(hash.slice(0, 52 / 4), 16);
+    let e = Math.pow(2, 52);
+
+    return Math.floor((100 * e - h) / (e - h)) / 100;
+}
+
+// Função para determinar o sinal com base no ponto de crash
+function determinarSinal(ponto) {
+    if (ponto < 1.6) {
+        return "Sair em 1.5x";
+    } else if (ponto >= 1.9 && ponto <= 2.1) {
+        return "Sair em 2.0x";
+    } else if (ponto > 2.1) {
+        return "Sair entre 2.0 e 3.0x";
+    }
+}
+
+// Função principal para gerar e exibir o sinal
+async function gerarESinal() {
+    const serverSeed = Array.from(crypto.getRandomValues(new Uint8Array(32)), byte => byte.toString(16).padStart(2, '0')).join('');
+    const clientSeed = "0000000000000000000415ebb64b0d51ccee0bb55826e43846e5bea777d91966";
+    const hash = await gerarHash(serverSeed + clientSeed);
+    const ponto = calcularPonto(hash);
+    const sinal = determinarSinal(ponto);
+    mostrarSinal(sinal);
+}
+
+// Adicionar evento ao botão "Pedir Sinal"
+document.querySelector('.pedir-sinal').addEventListener('click', gerarESinal);
+
+// Desabilitar o botão de "Pedir Sinal" por 15 segundos após clicar nele e mostrar o cronômetro
+document.querySelector('.pedir-sinal').addEventListener('click', function() {
+    const button = this;
+    button.disabled = true;
+    let timeLeft = 15;
+
+    const interval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(interval);
+            button.disabled = false;
+            button.innerHTML = "<i class='fas fa-eye'></i> 🎯Pedir Sinal 🚀";
+        } else {
+            button.innerHTML = `Aguarde ${timeLeft}s`;
+            timeLeft--;
+        }
+    }, 1000);
+});
